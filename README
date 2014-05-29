@@ -1,0 +1,54 @@
+font-config-info is a tiny program that queries and prints a Linux
+system's font configuration. It is intended to produce brief reports
+that users can send to developers to aid in debugging font rendering
+issues.
+
+Because users deserve choice, the Linux desktop provides a robust
+collection of overlapping configuration systems. Developers are then
+given the opportunity to use their favorite systems from this set to
+control each application's behavior.
+
+font-config-info currently prints information from the following sources:
+
+- GtkSettings (https://developer.gnome.org/gtk3/stable/GtkSettings.html)
+  is part of the GTK+ UI library. It cobbles together settings from
+  various sources (XSETTINGS, gtkrc files, programmatically-set values,
+  etc.) for use by GTK+ applications.
+
+- GSettings (https://developer.gnome.org/gio/stable/GSettings.html) is
+  an implementation of the DConf (https://wiki.gnome.org/dconf)
+  configuration specification. It stores settings for GNOME
+  applications.
+
+- X resources (http://en.wikipedia.org/wiki/X_resources) are an archaic
+  means of storing strings in the X Window System. Decades ago, they
+  were all the rage for configuring the appearance of X11 applications.
+  Resources are typically listed in a ~/.Xresources or ~/.Xdefaults file
+  that is loaded by the xrdb program after the X server starts. In
+  addition to application-specific settings, some applications load
+  "Xft."-prefixed resources to configure FreeType's text rendering.
+
+- The X server has its own notion of the physical dimensions of
+  connected displays, which can be used to compute a dots-per-inch value
+  that may affect the size at which text is rendered.
+
+- Fontconfig (http://www.freedesktop.org/wiki/Software/fontconfig/)
+  provides fine-grained, XML-based configuration of font matching and
+  rendering.
+
+Disturbingly, the above list does not cover all available mechanisms for
+configuration:
+
+- The XSETTINGS protocol
+  (http://standards.freedesktop.org/xsettings-spec/xsettings-spec-0.5.html)
+  defines a desktop-agnostic method for storing configuration in the X
+  server. Settings are typically defined by the gnome-settings-daemon
+  program. The dump_xsettings program from
+  https://code.google.com/p/xsettingsd/ can be used to display the
+  configuration stored in XSETTINGS.
+
+- GConf (https://projects.gnome.org/gconf/) is a legacy system that was
+  used to store preferences for GNOME 2 applications.
+
+- KDE surely has its own rich history of configuration systems, although
+  I'm unfamiliar with them.
