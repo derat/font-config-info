@@ -5,6 +5,7 @@
 
 #include <fontconfig/fontconfig.h>
 #include <gdk/gdkx.h>
+#include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
