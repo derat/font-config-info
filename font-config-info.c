@@ -1,11 +1,3 @@
-/* Compile with:
-
-   gcc -Wall -std=c99 font-config-info.c -o font-config-info \
-     `pkg-config --cflags gconf-2.0 gtk+-2.0` \
-     `pkg-config --libs gconf-2.0 gtk+-2.0`
-
-*/
-
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

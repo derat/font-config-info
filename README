@@ -8,6 +8,15 @@ collection of overlapping configuration systems. Developers are then
 given the opportunity to use their favorite systems from this set to
 control each application's behavior.
 
+The following packages are needed to build font-config-info on an
+Ubuntu 12.04 Precise system:
+
+  gcc
+  libc6-dev
+  libfontconfig1-dev
+  libgtk2.0-dev
+  libx11-dev
+
 font-config-info currently prints information from the following sources:
 
 - GtkSettings (https://developer.gnome.org/gtk3/stable/GtkSettings.html)
@@ -25,7 +34,7 @@ font-config-info currently prints information from the following sources:
   were all the rage for configuring the appearance of X11 applications.
   Resources are typically listed in a ~/.Xresources or ~/.Xdefaults file
   that is loaded by the xrdb program after the X server starts. In
-  addition to application-specific settings, some applications load
+  addition to application-specific settings, some applications read
   "Xft."-prefixed resources to configure FreeType's text rendering.
 
 - The X server has its own notion of the physical dimensions of
@@ -47,7 +56,7 @@ configuration:
   https://code.google.com/p/xsettingsd/ can be used to display the
   configuration stored in XSETTINGS.
 
-- GConf (https://projects.gnome.org/gconf/) is a legacy system that was
+- GConf (https://projects.gnome.org/gconf/) is a legacy system that is
   used to store preferences for GNOME 2 applications.
 
 - KDE surely has its own rich history of configuration systems, although
