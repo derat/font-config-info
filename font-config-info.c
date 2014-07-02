@@ -80,7 +80,27 @@ void PrintGtkSettings() {
   else
     printf(NAME_FORMAT "%d (default)\n", kDpiName, dpi);
 
-  g_object_unref(settings);
+  printf("\n");
+}
+
+void PrintGtkWidgetFontStyleAndSinkRef(GtkWidget* widget) {
+  GtkStyle* style = gtk_rc_get_style(widget);
+  PangoFontDescription* font_desc = style->font_desc;
+  gchar* font_string = font_desc ?
+      pango_font_description_to_string(font_desc) : NULL;
+  printf(NAME_FORMAT "\"%s\"\n", G_OBJECT_TYPE_NAME(widget),
+         font_string ? font_string : "[unset]");
+
+  if (font_string)
+    g_free(font_string);
+  g_object_ref_sink(widget);
+}
+
+void PrintGtkStyles() {
+  printf("GTK 2.0 styles:\n");
+  PrintGtkWidgetFontStyleAndSinkRef(gtk_label_new("foo"));
+  PrintGtkWidgetFontStyleAndSinkRef(gtk_menu_item_new_with_label("foo"));
+  PrintGtkWidgetFontStyleAndSinkRef(gtk_toolbar_new());
   printf("\n");
 }
 
@@ -209,6 +229,7 @@ int main(int argc, char** argv) {
 
   gtk_init(&argc, &argv);
   PrintGtkSettings();
+  PrintGtkStyles();
   PrintGnomeSettings();
   PrintXDisplayInfo();
   PrintXResources();
