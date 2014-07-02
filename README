@@ -24,6 +24,11 @@ font-config-info currently prints information from the following sources:
   various sources (XSETTINGS, gtkrc files, programmatically-set values,
   etc.) for use by GTK+ applications.
 
+- GtkStyle objects (https://developer.gnome.org/gtk2/stable/GtkStyle.html)
+  store theming information used by GTK widgets. I believe that the Pango
+  font descriptions stored here determine which font is used for a given
+  GTK widget.
+
 - GSettings (https://developer.gnome.org/gio/stable/GSettings.html) is
   an implementation of the DConf (https://wiki.gnome.org/dconf)
   configuration specification. It stores settings for GNOME
