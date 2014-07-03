@@ -244,7 +244,7 @@ void PrintFontconfigSettings() {
   int rgba = FC_RGBA_UNKNOWN;
   FcPatternGetInteger(match, FC_RGBA, 0, &rgba);
 
-  printf(NAME_FORMAT "%s\n", "FC_FAMILY", family);
+  printf(NAME_FORMAT "\"%s\"\n", "FC_FAMILY", family);
   printf(NAME_FORMAT "%.2f (requested %.2f at %.2f DPI)\n",
          "FC_PIXEL_SIZE", pixel_size, desc_pixel_size, pango_dpi);
   printf(NAME_FORMAT "%d\n", "FC_ANTIALIAS", antialias);
