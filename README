@@ -46,6 +46,14 @@ font-config-info currently prints information from the following sources:
   connected displays, which can be used to compute a dots-per-inch value
   that may affect the size at which text is rendered.
 
+- The XSETTINGS protocol
+  (http://standards.freedesktop.org/xsettings-spec/xsettings-spec-0.5.html)
+  defines a desktop-agnostic method for storing configuration in the X
+  server. Settings are typically defined by the gnome-settings-daemon program.
+  If the dump_xsettings program from https://code.google.com/p/xsettingsd/ is
+  installed, it will be executed to display the configuration stored in
+  XSETTINGS.
+
 - Fontconfig (http://www.freedesktop.org/wiki/Software/fontconfig/)
   provides fine-grained, XML-based configuration of font matching and
   rendering.
@@ -53,13 +61,6 @@ font-config-info currently prints information from the following sources:
 Disturbingly, the above list does not cover all available mechanisms for
 configuration:
 
-- The XSETTINGS protocol
-  (http://standards.freedesktop.org/xsettings-spec/xsettings-spec-0.5.html)
-  defines a desktop-agnostic method for storing configuration in the X
-  server. Settings are typically defined by the gnome-settings-daemon
-  program. The dump_xsettings program from
-  https://code.google.com/p/xsettingsd/ can be used to display the
-  configuration stored in XSETTINGS.
 
 - GConf (https://projects.gnome.org/gconf/) is a legacy system that is
   used to store preferences for GNOME 2 applications.

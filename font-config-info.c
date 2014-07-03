@@ -1,6 +1,9 @@
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <time.h>
 
 #include <fontconfig/fontconfig.h>
@@ -223,6 +226,21 @@ void PrintFontconfigSettings() {
   printf("\n");
 }
 
+void PrintXSettings() {
+  printf("XSETTINGS:\n");
+  int retval = system(
+      "set -o pipefail; "
+      "dump_xsettings | "
+        "grep -E '^(Gtk/FontName |Xft/)' | "
+        "sed -e 's/  */|/' | "
+        "awk -F '|' '{printf \"" NAME_FORMAT "%s\\n\", $1, $2}'");
+  if (WEXITSTATUS(retval) != 0) {
+    printf("Install dump_xsettings from https://code.google.com/p/xsettingsd/\n"
+           "to print this information.\n");
+  }
+  printf("\n");
+}
+
 int main(int argc, char** argv) {
   time_t now = time(NULL);
   printf("Running at %s\n", ctime(&now));
@@ -233,6 +251,7 @@ int main(int argc, char** argv) {
   PrintGnomeSettings();
   PrintXDisplayInfo();
   PrintXResources();
+  PrintXSettings();
   PrintFontconfigSettings();
   return 0;
 }
