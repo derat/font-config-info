@@ -61,7 +61,6 @@ font-config-info currently prints information from the following sources:
 Disturbingly, the above list does not cover all available mechanisms for
 configuration:
 
-
 - GConf (https://projects.gnome.org/gconf/) is a legacy system that is
   used to store preferences for GNOME 2 applications.
 
