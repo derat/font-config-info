@@ -193,15 +193,46 @@ void PrintXResources() {
 }
 
 void PrintFontconfigSettings() {
-  printf("Fontconfig (default match):\n");
+  GtkWidget* widget = gtk_label_new("foo");
+  PangoFontDescription* desc = gtk_rc_get_style(widget)->font_desc;
+
+  gchar* desc_string = pango_font_description_to_string(desc);
+  printf("Fontconfig (%s):\n", desc_string);
+  g_free(desc_string);
+
   FcPattern* pattern = FcPatternCreate();
   assert(pattern);
+
+  FcValue value;
+  value.type = FcTypeString;
+  value.u.s = (const FcChar8*) pango_font_description_get_family(desc);
+  FcPatternAdd(pattern, FC_FAMILY, value, FcTrue /* append */);
+
+  PangoContext* pango_context = pango_font_map_create_context(
+      pango_cairo_font_map_get_default());
+  double pango_dpi = pango_cairo_context_get_resolution(pango_context);
+  g_object_unref(pango_context);
+  if (pango_dpi <= 0)
+    pango_dpi = 96.0;
+  const double pixels_in_point = pango_dpi / 72.0;
+  double desc_pixel_size = pango_font_description_get_size(desc);
+  if (!pango_font_description_get_size_is_absolute(desc))
+    desc_pixel_size *= pixels_in_point;
+  desc_pixel_size /= PANGO_SCALE;
+  value.type = FcTypeDouble;
+  value.u.d = desc_pixel_size;
+  FcPatternAdd(pattern, FC_PIXEL_SIZE, value, FcTrue /* append */);
+
   FcConfigSubstitute(NULL, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
   FcResult result;
   FcPattern* match = FcFontMatch(0, pattern, &result);
   assert(match);
 
+  FcChar8* family = NULL;
+  FcPatternGetString(match, FC_FAMILY, 0, &family);
+  double pixel_size = 0.0;
+  FcPatternGetDouble(match, FC_PIXEL_SIZE, 0, &pixel_size);
   FcBool antialias = 0;
   FcPatternGetBool(match, FC_ANTIALIAS, 0, &antialias);
   FcBool hinting = 0;
@@ -213,9 +244,9 @@ void PrintFontconfigSettings() {
   int rgba = FC_RGBA_UNKNOWN;
   FcPatternGetInteger(match, FC_RGBA, 0, &rgba);
 
-  FcPatternDestroy(pattern);
-  FcPatternDestroy(match);
-
+  printf(NAME_FORMAT "%s\n", "FC_FAMILY", family);
+  printf(NAME_FORMAT "%.2f (requested %.2f at %.2f DPI)\n",
+         "FC_PIXEL_SIZE", pixel_size, desc_pixel_size, pango_dpi);
   printf(NAME_FORMAT "%d\n", "FC_ANTIALIAS", antialias);
   printf(NAME_FORMAT "%d\n", "FC_HINTING", hinting);
   printf(NAME_FORMAT "%d\n", "FC_AUTOHINT", autohint);
@@ -223,6 +254,10 @@ void PrintFontconfigSettings() {
          GetFontconfigHintStyleString(hint_style));
   printf(NAME_FORMAT "%d (%s)\n", "FC_RGBA", rgba,
          GetFontconfigRgbaString(rgba));
+
+  FcPatternDestroy(pattern);
+  FcPatternDestroy(match);
+  g_object_ref_sink(widget);
   printf("\n");
 }
 
