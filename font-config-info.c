@@ -222,14 +222,24 @@ void PrintFontconfigSettings(const char* user_desc_string) {
   g_object_unref(pango_context);
   if (pango_dpi <= 0)
     pango_dpi = 96.0;
-  const double pixels_in_point = pango_dpi / 72.0;
-  double desc_pixel_size = pango_font_description_get_size(desc);
-  if (!pango_font_description_get_size_is_absolute(desc))
-    desc_pixel_size *= pixels_in_point;
-  desc_pixel_size /= PANGO_SCALE;
-  value.type = FcTypeDouble;
-  value.u.d = desc_pixel_size;
-  FcPatternAdd(pattern, FC_PIXEL_SIZE, value, FcTrue /* append */);
+
+  // Pass either pixel or points depending on what was reuested.
+  if (pango_font_description_get_size_is_absolute(desc)) {
+    const double pixel_size =
+        pango_font_description_get_size(desc) / PANGO_SCALE;
+    value.type = FcTypeDouble;
+    value.u.d = pixel_size;
+    FcPatternAdd(pattern, FC_PIXEL_SIZE, value, FcTrue /* append */);
+    printf(NAME_FORMAT "%.2f pixels at %.2f DPI\n",
+           "requested size", pixel_size, pango_dpi);
+  } else {
+    const int point_size = pango_font_description_get_size(desc) / PANGO_SCALE;
+    value.type = FcTypeInteger;
+    value.u.i = point_size;
+    FcPatternAdd(pattern, FC_SIZE, value, FcTrue /* append */);
+    printf(NAME_FORMAT "%d points at %.2f DPI\n",
+           "requested size", point_size, pango_dpi);
+  }
 
   FcConfigSubstitute(NULL, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
@@ -241,6 +251,8 @@ void PrintFontconfigSettings(const char* user_desc_string) {
   FcPatternGetString(match, FC_FAMILY, 0, &family);
   double pixel_size = 0.0;
   FcPatternGetDouble(match, FC_PIXEL_SIZE, 0, &pixel_size);
+  int point_size = 0.0;
+  FcPatternGetInteger(match, FC_SIZE, 0, &point_size);
   FcBool antialias = 0;
   FcPatternGetBool(match, FC_ANTIALIAS, 0, &antialias);
   FcBool hinting = 0;
@@ -253,8 +265,8 @@ void PrintFontconfigSettings(const char* user_desc_string) {
   FcPatternGetInteger(match, FC_RGBA, 0, &rgba);
 
   printf(NAME_FORMAT "\"%s\"\n", "FC_FAMILY", family);
-  printf(NAME_FORMAT "%.2f (requested %.2f at %.2f DPI)\n",
-         "FC_PIXEL_SIZE", pixel_size, desc_pixel_size, pango_dpi);
+  printf(NAME_FORMAT "%.2f pixels\n", "FC_PIXEL_SIZE", pixel_size);
+  printf(NAME_FORMAT "%d points\n", "FC_SIZE", point_size);
   printf(NAME_FORMAT "%d\n", "FC_ANTIALIAS", antialias);
   printf(NAME_FORMAT "%d\n", "FC_HINTING", hinting);
   printf(NAME_FORMAT "%d\n", "FC_AUTOHINT", autohint);
