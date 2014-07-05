@@ -1,10 +1,12 @@
 #include <assert.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <fontconfig/fontconfig.h>
 #include <gdk/gdkx.h>
@@ -192,9 +194,15 @@ void PrintXResources() {
   printf("\n");
 }
 
-void PrintFontconfigSettings() {
-  GtkWidget* widget = gtk_label_new("foo");
-  PangoFontDescription* desc = gtk_rc_get_style(widget)->font_desc;
+void PrintFontconfigSettings(const char* user_desc_string) {
+  PangoFontDescription* desc = NULL;
+  if (user_desc_string) {
+    desc = pango_font_description_from_string(user_desc_string);
+  } else {
+    GtkWidget* widget = gtk_label_new("foo");
+    desc = pango_font_description_copy(gtk_rc_get_style(widget)->font_desc);
+    g_object_ref_sink(widget);
+  }
 
   gchar* desc_string = pango_font_description_to_string(desc);
   printf("Fontconfig (%s):\n", desc_string);
@@ -254,11 +262,11 @@ void PrintFontconfigSettings() {
          GetFontconfigHintStyleString(hint_style));
   printf(NAME_FORMAT "%d (%s)\n", "FC_RGBA", rgba,
          GetFontconfigRgbaString(rgba));
+  printf("\n");
 
   FcPatternDestroy(pattern);
   FcPatternDestroy(match);
-  g_object_ref_sink(widget);
-  printf("\n");
+  pango_font_description_free(desc);
 }
 
 void PrintXSettings() {
@@ -277,6 +285,19 @@ void PrintXSettings() {
 }
 
 int main(int argc, char** argv) {
+  int opt;
+  const char* user_font_desc = NULL;
+  while ((opt = getopt(argc, argv, "f:h")) != -1) {
+    switch (opt) {
+      case 'f':
+        user_font_desc = optarg;
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-f pango-font-description]\n", argv[0]);
+        return 1;
+    }
+  }
+
   time_t now = time(NULL);
   printf("Running at %s\n", ctime(&now));
 
@@ -287,6 +308,6 @@ int main(int argc, char** argv) {
   PrintXDisplayInfo();
   PrintXResources();
   PrintXSettings();
-  PrintFontconfigSettings();
+  PrintFontconfigSettings(user_font_desc);
   return 0;
 }
