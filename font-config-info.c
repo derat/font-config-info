@@ -17,6 +17,23 @@
 
 #define NAME_FORMAT "%-20s "
 
+const char* GetFontconfigResultString(FcResult result) {
+  switch (result) {
+    case FcResultMatch:
+      return "match";
+    case FcResultNoMatch:
+      return "no match";
+    case FcResultTypeMismatch:
+      return "type mismatch";
+    case FcResultNoId:
+      return "no id";
+    case FcResultOutOfMemory:
+      return "out of memory";
+    default:
+      return "unknown";
+  }
+}
+
 const char* GetFontconfigHintStyleString(int style) {
   switch (style) {
     case FC_HINT_NONE:
@@ -194,6 +211,47 @@ void PrintXResources() {
   printf("\n");
 }
 
+void PrintFontconfigString(FcPattern* match, const char* prop) {
+  FcChar8* value = NULL;
+  FcResult result = FcResultNoMatch;
+  if ((result = FcPatternGetString(match, prop, 0, &value)) != FcResultMatch)
+    printf(NAME_FORMAT "[%s]\n", prop, GetFontconfigResultString(result));
+  else
+    printf(NAME_FORMAT "%s\n", prop, value);
+}
+
+void PrintFontconfigBool(FcPattern* match, const char* prop) {
+  FcBool value = 0;
+  FcResult result = FcResultNoMatch;
+  if ((result = FcPatternGetBool(match, prop, 0, &value)) != FcResultMatch)
+    printf(NAME_FORMAT "[%s]\n", prop, GetFontconfigResultString(result));
+  else
+    printf(NAME_FORMAT "%d\n", prop, value);
+}
+
+void PrintFontconfigInt(FcPattern* match,
+                        const char* prop,
+                        const char* (*int_to_string_func)(int),
+                        const char* suffix) {
+  int value = 0;
+  FcResult result = FcResultNoMatch;
+  if ((result = FcPatternGetInteger(match, prop, 0, &value)) != FcResultMatch)
+    printf(NAME_FORMAT "[%s]\n", prop, GetFontconfigResultString(result));
+  else if (int_to_string_func)
+    printf(NAME_FORMAT "%d%s (%s)\n", prop, value, suffix, int_to_string_func(value));
+  else
+    printf(NAME_FORMAT "%d%s\n", prop, value, suffix);
+}
+
+void PrintFontconfigDouble(FcPattern* match, const char* prop, const char* suffix) {
+  double value = 0.0;
+  FcResult result = FcResultNoMatch;
+  if ((result = FcPatternGetDouble(match, prop, 0, &value)) != FcResultMatch)
+    printf(NAME_FORMAT "[%s]\n", prop, GetFontconfigResultString(result));
+  else
+    printf(NAME_FORMAT "%.2f%s\n", prop, value, suffix);
+}
+
 void PrintFontconfigSettings(const char* user_desc_string) {
   PangoFontDescription* desc = NULL;
   if (user_desc_string) {
@@ -223,7 +281,7 @@ void PrintFontconfigSettings(const char* user_desc_string) {
   if (pango_dpi <= 0)
     pango_dpi = 96.0;
 
-  // Pass either pixel or points depending on what was reuested.
+  // Pass either pixel or points depending on what was requested.
   if (pango_font_description_get_size_is_absolute(desc)) {
     const double pixel_size =
         pango_font_description_get_size(desc) / PANGO_SCALE;
@@ -247,33 +305,17 @@ void PrintFontconfigSettings(const char* user_desc_string) {
   FcPattern* match = FcFontMatch(0, pattern, &result);
   assert(match);
 
-  FcChar8* family = NULL;
-  FcPatternGetString(match, FC_FAMILY, 0, &family);
-  double pixel_size = 0.0;
-  FcPatternGetDouble(match, FC_PIXEL_SIZE, 0, &pixel_size);
   int point_size = 0.0;
   FcPatternGetInteger(match, FC_SIZE, 0, &point_size);
-  FcBool antialias = 0;
-  FcPatternGetBool(match, FC_ANTIALIAS, 0, &antialias);
-  FcBool hinting = 0;
-  FcPatternGetBool(match, FC_HINTING, 0, &hinting);
-  FcBool autohint = 0;
-  FcPatternGetBool(match, FC_AUTOHINT, 0, &autohint);
-  int hint_style = FC_HINT_NONE;
-  FcPatternGetInteger(match, FC_HINT_STYLE, 0, &hint_style);
-  int rgba = FC_RGBA_UNKNOWN;
-  FcPatternGetInteger(match, FC_RGBA, 0, &rgba);
 
-  printf(NAME_FORMAT "\"%s\"\n", "FC_FAMILY", family);
-  printf(NAME_FORMAT "%.2f pixels\n", "FC_PIXEL_SIZE", pixel_size);
-  printf(NAME_FORMAT "%d points\n", "FC_SIZE", point_size);
-  printf(NAME_FORMAT "%d\n", "FC_ANTIALIAS", antialias);
-  printf(NAME_FORMAT "%d\n", "FC_HINTING", hinting);
-  printf(NAME_FORMAT "%d\n", "FC_AUTOHINT", autohint);
-  printf(NAME_FORMAT "%d (%s)\n", "FC_HINT_STYLE", hint_style,
-         GetFontconfigHintStyleString(hint_style));
-  printf(NAME_FORMAT "%d (%s)\n", "FC_RGBA", rgba,
-         GetFontconfigRgbaString(rgba));
+  PrintFontconfigString(match, FC_FAMILY);
+  PrintFontconfigDouble(match, FC_PIXEL_SIZE, " pixels");
+  PrintFontconfigInt(match, FC_SIZE, NULL, " points");
+  PrintFontconfigBool(match, FC_ANTIALIAS);
+  PrintFontconfigBool(match, FC_HINTING);
+  PrintFontconfigBool(match, FC_AUTOHINT);
+  PrintFontconfigInt(match, FC_HINT_STYLE, GetFontconfigHintStyleString, "");
+  PrintFontconfigInt(match, FC_RGBA, GetFontconfigRgbaString, "");
   printf("\n");
 
   FcPatternDestroy(pattern);
