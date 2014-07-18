@@ -269,34 +269,19 @@ void PrintFontconfigSettings(const char* user_desc_string) {
   FcPattern* pattern = FcPatternCreate();
   assert(pattern);
 
-  FcValue value;
-  value.type = FcTypeString;
-  value.u.s = (const FcChar8*) pango_font_description_get_family(desc);
-  FcPatternAdd(pattern, FC_FAMILY, value, FcTrue /* append */);
-
-  PangoContext* pango_context = pango_font_map_create_context(
-      pango_cairo_font_map_get_default());
-  double pango_dpi = pango_cairo_context_get_resolution(pango_context);
-  g_object_unref(pango_context);
-  if (pango_dpi <= 0)
-    pango_dpi = 96.0;
+  FcPatternAddString(pattern, FC_FAMILY,
+                     (const FcChar8*) pango_font_description_get_family(desc));
 
   // Pass either pixel or points depending on what was requested.
   if (pango_font_description_get_size_is_absolute(desc)) {
     const double pixel_size =
         pango_font_description_get_size(desc) / PANGO_SCALE;
-    value.type = FcTypeDouble;
-    value.u.d = pixel_size;
-    FcPatternAdd(pattern, FC_PIXEL_SIZE, value, FcTrue /* append */);
-    printf(NAME_FORMAT "%.2f pixels at %.2f DPI\n",
-           "requested size", pixel_size, pango_dpi);
+    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, pixel_size);
+    printf(NAME_FORMAT "%.2f pixels\n", "requested size", pixel_size);
   } else {
     const int point_size = pango_font_description_get_size(desc) / PANGO_SCALE;
-    value.type = FcTypeInteger;
-    value.u.i = point_size;
-    FcPatternAdd(pattern, FC_SIZE, value, FcTrue /* append */);
-    printf(NAME_FORMAT "%d points at %.2f DPI\n",
-           "requested size", point_size, pango_dpi);
+    FcPatternAddInteger(pattern, FC_SIZE, point_size);
+    printf(NAME_FORMAT "%d points\n", "requested size", point_size);
   }
 
   FcConfigSubstitute(NULL, pattern, FcMatchPattern);
