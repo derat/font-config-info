@@ -323,11 +323,13 @@ void PrintFontconfigSettings(const char* user_desc_string,
 void PrintXSettings() {
   printf("XSETTINGS:\n");
   int retval = system(
-      "set -o pipefail; "
-      "dump_xsettings | "
-        "grep -E '^(Gtk/FontName |Xft/)' | "
-        "sed -e 's/  */|/' | "
-        "awk -F '|' '{printf \"" NAME_FORMAT "%s\\n\", $1, $2}'");
+      "bash -c \""
+        "set -o pipefail; "
+        "dump_xsettings | "
+          "grep -E '^(Gtk/FontName |Xft/)' | "
+          "sed -e 's/  */|/' | "
+          "awk -F '|' '{printf \\\"" NAME_FORMAT "%s\\n\\\", \\$1, \\$2}'"
+      "\"");
   if (WEXITSTATUS(retval) != 0) {
     printf("Install dump_xsettings from https://code.google.com/p/xsettingsd/\n"
            "to print this information.\n");
