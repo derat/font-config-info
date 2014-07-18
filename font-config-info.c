@@ -243,7 +243,9 @@ void PrintFontconfigInt(FcPattern* match,
     printf(NAME_FORMAT "%d%s\n", prop, value, suffix);
 }
 
-void PrintFontconfigDouble(FcPattern* match, const char* prop, const char* suffix) {
+void PrintFontconfigDouble(FcPattern* match,
+                           const char* prop,
+                           const char* suffix) {
   double value = 0.0;
   FcResult result = FcResultNoMatch;
   if ((result = FcPatternGetDouble(match, prop, 0, &value)) != FcResultMatch)
@@ -252,7 +254,9 @@ void PrintFontconfigDouble(FcPattern* match, const char* prop, const char* suffi
     printf(NAME_FORMAT "%.2f%s\n", prop, value, suffix);
 }
 
-void PrintFontconfigSettings(const char* user_desc_string) {
+void PrintFontconfigSettings(const char* user_desc_string,
+                             int bold,
+                             int italic) {
   PangoFontDescription* desc = NULL;
   if (user_desc_string) {
     desc = pango_font_description_from_string(user_desc_string);
@@ -271,6 +275,14 @@ void PrintFontconfigSettings(const char* user_desc_string) {
 
   FcPatternAddString(pattern, FC_FAMILY,
                      (const FcChar8*) pango_font_description_get_family(desc));
+  if (bold) {
+    FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
+    printf(NAME_FORMAT "FC_WEIGHT_BOLD\n", "requested weight");
+  }
+  if (italic) {
+    FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC);
+    printf(NAME_FORMAT "FC_SLANT_ITALIC\n", "requested slant");
+  }
 
   // Pass either pixel or points depending on what was requested.
   if (pango_font_description_get_size_is_absolute(desc)) {
@@ -325,14 +337,28 @@ void PrintXSettings() {
 
 int main(int argc, char** argv) {
   int opt;
+  int bold = 0, italic = 0;
   const char* user_font_desc = NULL;
-  while ((opt = getopt(argc, argv, "f:h")) != -1) {
+  while ((opt = getopt(argc, argv, "bf:hi")) != -1) {
     switch (opt) {
+      case 'b':
+        bold = 1;
+        break;
       case 'f':
         user_font_desc = optarg;
         break;
+      case 'i':
+        italic = 1;
+        break;
       default:
-        fprintf(stderr, "Usage: %s [-f pango-font-description]\n", argv[0]);
+        fprintf(stderr,
+                "Usage: %s [options]\n"
+                "\n"
+                "Options:\n"
+                "  -b       Request bold font from Fontconfig\n"
+                "  -f DESC  Specify Pango font description for Fontconfig\n"
+                "  -i       Request italic font from Fontconfig\n",
+                argv[0]);
         return 1;
     }
   }
@@ -347,6 +373,6 @@ int main(int argc, char** argv) {
   PrintXDisplayInfo();
   PrintXResources();
   PrintXSettings();
-  PrintFontconfigSettings(user_font_desc);
+  PrintFontconfigSettings(user_font_desc, bold, italic);
   return 0;
 }
