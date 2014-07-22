@@ -311,6 +311,7 @@ void PrintFontconfigSettings(const char* user_desc_string,
   PrintFontconfigBool(match, FC_ANTIALIAS);
   PrintFontconfigBool(match, FC_HINTING);
   PrintFontconfigBool(match, FC_AUTOHINT);
+  PrintFontconfigBool(match, FC_EMBEDDED_BITMAP);
   PrintFontconfigInt(match, FC_HINT_STYLE, GetFontconfigHintStyleString, "");
   PrintFontconfigInt(match, FC_RGBA, GetFontconfigRgbaString, "");
   printf("\n");
@@ -322,6 +323,7 @@ void PrintFontconfigSettings(const char* user_desc_string,
 
 void PrintXSettings() {
   printf("XSETTINGS:\n");
+  fflush(NULL);
   int retval = system(
       "bash -c \""
         "set -o pipefail; "
