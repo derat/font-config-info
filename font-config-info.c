@@ -147,6 +147,20 @@ void PrintGSettingsSetting(GSettings* settings,
 void PrintGnomeSettings() {
   const char kSchema[] = "org.gnome.desktop.interface";
   printf("GSettings (%s):\n", kSchema);
+
+  const gchar* const* schemas = NULL;
+  int found_schema = 0;
+  for (schemas = g_settings_list_schemas(); *schemas; schemas++) {
+    if (strcmp(kSchema, *schemas) == 0) {
+      found_schema = 1;
+      break;
+    }
+  }
+  if (!found_schema) {
+    printf("schema not found; maybe GNOME isn't present\n\n");
+    return;
+  }
+
   GSettings* settings = g_settings_new(kSchema);
   assert(settings);
   PrintGSettingsSetting(settings, "font-name");
