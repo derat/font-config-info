@@ -268,9 +268,23 @@ void PrintFontconfigDouble(FcPattern* match,
     printf(NAME_FORMAT "%.2f%s\n", prop, value, suffix);
 }
 
-void PrintFontconfigSettings(const char* user_desc_string,
-                             int bold,
-                             int italic) {
+void PrintFontconfigPattern(FcPattern* pattern,
+                            int print_family_and_size) {
+  if (print_family_and_size) {
+    PrintFontconfigString(pattern, FC_FAMILY);
+    PrintFontconfigDouble(pattern, FC_PIXEL_SIZE, " pixels");
+    PrintFontconfigInt(pattern, FC_SIZE, NULL, " points");
+  }
+  PrintFontconfigBool(pattern, FC_ANTIALIAS);
+  PrintFontconfigBool(pattern, FC_HINTING);
+  PrintFontconfigBool(pattern, FC_AUTOHINT);
+  PrintFontconfigBool(pattern, FC_EMBEDDED_BITMAP);
+  PrintFontconfigInt(pattern, FC_HINT_STYLE, GetFontconfigHintStyleString, "");
+  PrintFontconfigInt(pattern, FC_RGBA, GetFontconfigRgbaString, "");
+  printf("\n");
+}
+
+void PrintFontconfigMatch(const char* user_desc_string, int bold, int italic) {
   PangoFontDescription* desc = NULL;
   if (user_desc_string) {
     desc = pango_font_description_from_string(user_desc_string);
@@ -316,23 +330,29 @@ void PrintFontconfigSettings(const char* user_desc_string,
   FcPattern* match = FcFontMatch(0, pattern, &result);
   assert(match);
 
-  int point_size = 0.0;
-  FcPatternGetInteger(match, FC_SIZE, 0, &point_size);
-
-  PrintFontconfigString(match, FC_FAMILY);
-  PrintFontconfigDouble(match, FC_PIXEL_SIZE, " pixels");
-  PrintFontconfigInt(match, FC_SIZE, NULL, " points");
-  PrintFontconfigBool(match, FC_ANTIALIAS);
-  PrintFontconfigBool(match, FC_HINTING);
-  PrintFontconfigBool(match, FC_AUTOHINT);
-  PrintFontconfigBool(match, FC_EMBEDDED_BITMAP);
-  PrintFontconfigInt(match, FC_HINT_STYLE, GetFontconfigHintStyleString, "");
-  PrintFontconfigInt(match, FC_RGBA, GetFontconfigRgbaString, "");
-  printf("\n");
+  PrintFontconfigPattern(match, 1);
 
   FcPatternDestroy(pattern);
   FcPatternDestroy(match);
   pango_font_description_free(desc);
+}
+
+void PrintFontconfigDefaults() {
+  printf("Fontconfig (default pattern):\n");
+  FcPattern* pattern = FcPatternCreate();
+  assert(pattern);
+  FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+  FcDefaultSubstitute(pattern);
+  PrintFontconfigPattern(pattern, 0);
+
+  printf("Fontconfig (default match):\n");
+  FcResult result;
+  FcPattern* match = FcFontMatch(0, pattern, &result);
+  assert(match);
+  PrintFontconfigPattern(match, 0);
+
+  FcPatternDestroy(pattern);
+  FcPatternDestroy(match);
 }
 
 void PrintXSettings() {
@@ -391,6 +411,7 @@ int main(int argc, char** argv) {
   PrintXDisplayInfo();
   PrintXResources();
   PrintXSettings();
-  PrintFontconfigSettings(user_font_desc, bold, italic);
+  PrintFontconfigMatch(user_font_desc, bold, italic);
+  PrintFontconfigDefaults();
   return 0;
 }
