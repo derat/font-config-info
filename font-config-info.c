@@ -339,20 +339,28 @@ void PrintFontconfigMatch(const char* user_desc_string, int bold, int italic) {
 
 void PrintFontconfigDefaults() {
   printf("Fontconfig (default pattern):\n");
-  FcPattern* pattern = FcPatternCreate();
-  assert(pattern);
-  FcConfigSubstitute(NULL, pattern, FcMatchPattern);
-  FcDefaultSubstitute(pattern);
-  PrintFontconfigPattern(pattern, 0);
+  FcPattern* query = FcPatternCreate();
+  assert(query);
+  FcConfigSubstitute(NULL, query, FcMatchPattern);
+  FcDefaultSubstitute(query);
+  PrintFontconfigPattern(query, 0);
 
   printf("Fontconfig (default match):\n");
   FcResult result;
-  FcPattern* match = FcFontMatch(0, pattern, &result);
+  FcPattern* match = FcFontMatch(NULL, query, &result);
   assert(match);
-  PrintFontconfigPattern(match, 0);
+  PrintFontconfigPattern(match, 1);
 
-  FcPatternDestroy(pattern);
+  printf("Fontconfig (non-family defaults):\n");
+  FcPattern* query_without_family = FcPatternDuplicate(query);
+  FcPatternRemove(query_without_family, FC_FAMILY, 0);
+  FcPattern* defaults = FcFontRenderPrepare(NULL, query, query_without_family);
+  PrintFontconfigPattern(defaults, 0);
+
+  FcPatternDestroy(query);
   FcPatternDestroy(match);
+  FcPatternDestroy(query_without_family);
+  FcPatternDestroy(defaults);
 }
 
 void PrintXSettings() {
