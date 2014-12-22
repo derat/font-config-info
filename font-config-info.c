@@ -352,14 +352,14 @@ void PrintFontconfigDefaults() {
   PrintFontconfigPattern(match, 1);
 
   printf("Fontconfig (non-family defaults):\n");
-  FcPattern* query_without_family = FcPatternDuplicate(query);
-  FcPatternRemove(query_without_family, FC_FAMILY, 0);
-  FcPattern* defaults = FcFontRenderPrepare(NULL, query, query_without_family);
+  FcPattern* defaults = FcPatternDuplicate(query);
+  FcPatternDel(defaults, FC_FAMILY);
+  FcConfigSubstituteWithPat (NULL, defaults, query, FcMatchFont);
+
   PrintFontconfigPattern(defaults, 0);
 
   FcPatternDestroy(query);
   FcPatternDestroy(match);
-  FcPatternDestroy(query_without_family);
   FcPatternDestroy(defaults);
 }
 
