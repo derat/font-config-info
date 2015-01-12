@@ -351,11 +351,12 @@ void PrintFontconfigDefaults() {
   assert(match);
   PrintFontconfigPattern(match, 1);
 
-  printf("Fontconfig (non-family defaults):\n");
+  printf("Fontconfig (non-family/size defaults):\n");
   FcPattern* defaults = FcPatternDuplicate(query);
   FcPatternDel(defaults, FC_FAMILY);
-  FcConfigSubstituteWithPat (NULL, defaults, query, FcMatchFont);
-
+  FcPatternDel(defaults, FC_PIXEL_SIZE);
+  FcPatternDel(defaults, FC_SIZE);
+  FcConfigSubstituteWithPat(NULL, defaults, query, FcMatchFont);
   PrintFontconfigPattern(defaults, 0);
 
   FcPatternDestroy(query);
