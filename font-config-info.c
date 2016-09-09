@@ -148,9 +148,15 @@ void PrintGnomeSettings() {
   const char kSchema[] = "org.gnome.desktop.interface";
   printf("GSettings (%s):\n", kSchema);
 
-  const gchar* const* schemas = NULL;
+  gchar** schemas = NULL;
   int found_schema = 0;
-  for (schemas = g_settings_list_schemas(); *schemas; schemas++) {
+
+  g_settings_schema_source_list_schemas(g_settings_schema_source_get_default(),
+					TRUE,
+					&schemas,
+					NULL);
+
+  for ( ; *schemas; schemas++) {
     if (strcmp(kSchema, *schemas) == 0) {
       found_schema = 1;
       break;
